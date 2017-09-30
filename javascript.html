@@ -1,0 +1,203 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Leap Motion JavaScript Sample</title>
+<script src="http://js.leapmotion.com/leap-0.6.3.min.js"></script>
+<link href="song.js">
+<script>
+// Store frame for motion functions
+var song = {
+  songData: [
+    { // Instrument 0
+      i: [
+      2, // OSC1_WAVEFORM
+      100, // OSC1_VOL
+      128, // OSC1_SEMI
+      0, // OSC1_XENV
+      3, // OSC2_WAVEFORM
+      201, // OSC2_VOL
+      128, // OSC2_SEMI
+      0, // OSC2_DETUNE
+      0, // OSC2_XENV
+      0, // NOISE_VOL
+      5, // ENV_ATTACK
+      6, // ENV_SUSTAIN
+      58, // ENV_RELEASE
+      0, // ARP_CHORD
+      0, // ARP_SPEED
+      0, // LFO_WAVEFORM
+      195, // LFO_AMT
+      6, // LFO_FREQ
+      1, // LFO_FX_FREQ
+      2, // FX_FILTER
+      135, // FX_FREQ
+      0, // FX_RESONANCE
+      0, // FX_DIST
+      32, // FX_DRIVE
+      147, // FX_PAN_AMT
+      6, // FX_PAN_FREQ
+      121, // FX_DELAY_AMT
+      6 // FX_DELAY_TIME
+      ],
+      // Patterns
+      p: [1],
+      // Columns
+      c: [
+        {n: [],
+         f: []}
+      ]
+    },
+  ],
+  rowLen: 5513,   // In sample lengths
+  patternLen: 32,  // Rows per pattern
+  endPattern: 0,  // End pattern
+  numChannels: 1  // Number of channels
+};
+
+var previousFrame = null;
+var paused = false;
+var num=0;
+var count=0;
+
+// Setup Leap loop with frame callback function
+var controllerOptions = {enableGestures: true};
+
+// to use HMD mode:
+// controllerOptions.optimizeHMD = true;
+
+Leap.loop(controllerOptions, function(frame) {
+  var colors=["white","yellow","orange","red","purple","blue","green","black"]
+  if (paused) {
+    return; // Skip this update
+  }
+
+  // Display Frame object data
+  var frameOutput = document.getElementById("frameData");
+
+  var frameString = "Frame ID: " + frame.id  + "<br />"
+                  + "Timestamp: " + frame.timestamp + " &micro;s<br />"
+                  + "Hands: " + frame.hands.length + "<br />"
+                  + "Fingers: " + frame.fingers.length + "<br />";
+
+  frameOutput.innerHTML = "<div style='width:300px; float:left; padding:5px'>" + frameString + "</div>";
+
+  // Display Hand object data
+  var handOutput = document.getElementById("handData");
+  var handString = "";
+  if (frame.hands.length > 0) {
+    for (var i = 0; i < frame.hands.length; i++) {
+      var hand = frame.hands[i];
+      var context = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = context.createOscillator(); // instantiate an oscillator
+      osc.type = 'square'; // this is the default - also square, sawtooth, triangle
+      osc.frequency.value = hand.palmPosition[1]; // Hz
+      osc.connect(context.destination); // connect it to the destination
+      osc.start(); // start the oscillator
+      handString += "<div style='width:300px; float:left; padding:5px'>";
+      handString += "Hand ID: " + hand.id + "<br />";
+      handString += "Type: " + hand.type + " hand" + "<br />";
+      handString += "Direction: " + vectorToString(hand.direction, 2) + "<br />";
+      handString += "Palm position: " + vectorToString(hand.palmPosition) + " mm<br />";
+      handString += "Grab strength: " + hand.grabStrength + "<br />";
+      handString += "Pinch strength: " + hand.pinchStrength + "<br />";
+      handString += "Confidence: " + hand.confidence + "<br />";
+      handString += "Arm direction: " + vectorToString(hand.arm.direction()) + "<br />";
+      handString += "Arm center: " + vectorToString(hand.arm.center()) + "<br />";
+      handString += "Arm up vector: " + vectorToString(hand.arm.basis[1]) + "<br />";
+
+      // IDs of pointables associated with this hand
+      if (hand.pointables.length > 0) {
+        var fingerIds = [];
+        for (var j = 0; j < hand.pointables.length; j++) {
+          var pointable = hand.pointables[j];
+            fingerIds.push(pointable.id);
+        }
+        if (fingerIds.length > 0) {
+          handString += "Fingers IDs: " + fingerIds.join(", ") + "<br />";
+        }
+      }
+
+      handString += "</div>";
+    }
+  } else {
+    osc.stop(context.currentTime + 2);
+  }
+  handOutput.innerHTML = handString;
+
+  // Display Pointable (finger) object data
+  var pointableOutput = document.getElementById("pointableData");
+  var pointableString = "";
+  if (frame.pointables.length > 0) {
+    var fingerTypeMap = ["Thumb", "Index finger", "Middle finger", "Ring finger", "Pinky finger"];
+    var boneTypeMap = ["Metacarpal", "Proximal phalanx", "Intermediate phalanx", "Distal phalanx"];
+    for (var i = 0; i < frame.pointables.length; i++) {
+      var pointable = frame.pointables[i];
+
+      pointableString += "<div style='width:250px; float:left; padding:5px'>";
+
+      {
+        pointableString += "Pointable ID: " + pointable.id + "<br />";
+        pointableString += "Type: " + fingerTypeMap[pointable.type] + "<br />";
+        pointableString += "Belongs to hand with ID: " + pointable.handId + "<br />";
+        pointableString += "Classified as a finger<br />";
+        pointableString += "Length: " + pointable.length.toFixed(1) + " mm<br />";
+        pointableString += "Width: "  + pointable.width.toFixed(1) + " mm<br />";
+        pointableString += "Direction: " + vectorToString(pointable.direction, 2) + "<br />";
+        pointableString += "Extended?: "  + pointable.extended + "<br />";
+        pointable.bones.forEach( function(bone){
+          pointableString += boneTypeMap[bone.type] + " bone <br />";
+          pointableString += "Center: " + vectorToString(bone.center()) + "<br />";
+          pointableString += "Direction: " + vectorToString(bone.direction()) + "<br />";
+          pointableString += "Up vector: " + vectorToString(bone.basis[1]) + "<br />";
+        });
+        pointableString += "Tip position: " + vectorToString(pointable.tipPosition) + " mm<br />";
+        pointableString += "</div>";
+      }
+    }
+  }
+  else {
+    pointableString += "<div>No pointables</div>";
+  }
+  pointableOutput.innerHTML = pointableString;
+
+  // Store frame for motion functions
+  previousFrame = frame;
+})
+
+function vectorToString(vector, digits) {
+  if (typeof digits === "undefined") {
+    digits = 1;
+  }
+  return "(" + vector[0].toFixed(digits) + ", "
+             + vector[1].toFixed(digits) + ", "
+             + vector[2].toFixed(digits) + ")";
+}
+
+function togglePause() {
+  paused = !paused;
+
+  if (paused) {
+    document.getElementById("pause").innerText = "Resume";
+  } else {
+    document.getElementById("pause").innerText = "Pause";
+  }
+}
+
+</script>
+</head>
+<body>
+<h1>Leap Motion JavaScript Sample</h1>
+<div id="main">
+  <button id="pause" onclick="togglePause()">Pause</button>
+  <h3>Frame data:</h3>
+  <div id="frameData"></div>
+  <div style="clear:both;"></div>
+  <h3>Hand data:</h3>
+  <div id="handData"></div>
+  <div style="clear:both;"></div>
+  <h3>Finger data:</h3>
+  <div id="pointableData"></div>
+  <div style="clear:both;"></div>
+</div>
+</body>
+</html>
