@@ -26,9 +26,25 @@ See additional libraries, guides, and examples at:
 <script src="http://js.leapmotion.com/leap-0.6.3.min.js"></script>
 <script>
 // Store frame for motion functions
+function debounce(func, wait, immediate) {
+	var timeout;
+	return function() {
+		var context = this, args = arguments;
+		var later = function() {
+			timeout = null;
+			if (!immediate) func.apply(context, args);
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+		if (callNow) func.apply(context, args);
+	};
+};
+
 var previousFrame = null;
 var paused = false;
 var num=0;
+var count=0;
 
 // Setup Leap loop with frame callback function
 var controllerOptions = {enableGestures: true};
@@ -55,40 +71,61 @@ Leap.loop(controllerOptions, function(frame) {
   // Display Hand object data
   var handOutput = document.getElementById("handData");
   var handString = "";
-  if (frame.hands.length > 0) {
-    if(frame.gestures.length >0){
-        var doThing = frame.gestures.forEach(function(gesture){
-          if(gesture.type == 'swipe'){
-            var isHorizontal = Math.abs(gesture.direction[0]) > Math.abs(gesture.direction[1]);
-            //Classify as right-left or up-down
-            if(isHorizontal){
-                if(gesture.direction[0] > 0){
-                    swipeDirection = "right";
-                } else {
-                    swipeDirection = "left";
-                }
-            } else { //vertical
-                if(gesture.direction[1] > 0){
-                    swipeDirection = "up";
-                } else {
-                    swipeDirection = "down";
-                }
-            }
-            if(swipeDirection == "right"){
-              num+=1;
-              document.body.style.backgroundColor= colors[num];
-            } else if(swipeDirection == "left") {
-              num-=1;
-              document.body.style.backgroundColor= colors[num];
-            }
-            } else{
-              setTimeout(doThing, 100000000);
-            }
-        })
-    }
+    // if(frame.gestures.length >0){
+    //   var doThing = debounce(function(gesture){
+    //       if(gesture.type == 'swipe'){
+    //         var isHorizontal = Math.abs(gesture.direction[0]) > Math.abs(gesture.direction[1]);
+    //         //Classify as right-left or up-down
+    //         if(isHorizontal){
+    //             if(gesture.direction[0] > 0){
+    //                 swipeDirection = "right";
+    //             } else {
+    //                 swipeDirection = "left";
+    //             }
+    //         } else { //vertical
+    //             if(gesture.direction[1] > 0){
+    //                 swipeDirection = "up";
+    //             } else {
+    //                 swipeDirection = "down";
+    //             }
+    //         }
+    //         if(swipeDirection == "right"){
+    //           num+=1;
+    //           count+=1;
+    //           alert(num);
+    //           //document.body.style.backgroundColor= colors[num];
+    //         } else if(swipeDirection == "left") {
+    //           num-=1;
+    //           count+=1;
+    //           alert(gesture.type);
+    //           //document.body.style.backgroundColor= colors[num];
+    //         }
+    //         } else{
+    //           setTimeout(doThing, 100000000);
+    //         }
+    //   }, 25000, true)
     for (var i = 0; i < frame.hands.length; i++) {
+
       var hand = frame.hands[i];
 
+      if(count.){
+        if (Math.abs(hand.palmPosition[0])>255){
+          var red = 255;
+        } else {
+          var red = Math.round(Math.abs(hand.palmPosition[0]));
+        }
+        if (Math.abs(hand.palmPosition[1])>255){
+          var green = 255;
+        } else {
+          var green = Math.round(Math.abs(hand.palmPosition[1]));
+        }
+        if (Math.abs(hand.palmPosition[2])>255){
+          var blue = 255;
+        } else {
+          var blue = Math.round(Math.abs(hand.palmPosition[2]));
+        }
+        document.body.style.backgroundColor = 'rgb(' + red + ',' + green + ',' + blue + ')';
+      }
       handString += "<div style='width:300px; float:left; padding:5px'>";
       handString += "Hand ID: " + hand.id + "<br />";
       handString += "Type: " + hand.type + " hand" + "<br />";
@@ -115,7 +152,6 @@ Leap.loop(controllerOptions, function(frame) {
 
       handString += "</div>";
     }
-  }
   handOutput.innerHTML = handString;
 
   // Display Pointable (finger) object data
@@ -157,7 +193,6 @@ Leap.loop(controllerOptions, function(frame) {
   // Store frame for motion functions
   previousFrame = frame;
 })
-
 function vectorToString(vector, digits) {
   if (typeof digits === "undefined") {
     digits = 1;
@@ -176,6 +211,7 @@ function togglePause() {
     document.getElementById("pause").innerText = "Pause";
   }
 }
+
 
 </script>
 </head>
