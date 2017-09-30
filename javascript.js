@@ -1,4 +1,5 @@
 var ws;
+var num=0;
 
 // Support both the WebSocket and MozWebSocket objects
 if ((typeof(WebSocket) == 'undefined') &&
@@ -9,7 +10,7 @@ WebSocket = MozWebSocket;
 // Create the socket with event handlers
 function connectToWebSocket() {
 // Create and open the socket
-ws = new WebSocket("ws://localhost:6437/v4.json");
+ws = new WebSocket("ws://localhost:6437/v6.json");
 
 // On successful connection
 ws.onopen = function(event) {
@@ -22,20 +23,27 @@ ws.onopen = function(event) {
 };
 
 // On message received
-ws.onmessage = function(event) {
-    var obj = JSON.parse(event.data);
+var controller = leap.loop({enableGestures=true}, function(frame) {
+    alert("ahh");
+    var colors=["white","yellow","orange","red"];
+    var obj = JSON.parse(frame.data);
     var str = JSON.stringify(obj, undefined, 2);
+    if(obj.gestures.length > 0){
+      frame.gestures.forEach(function(gesture){
+        if(gesture.type == 'swipe'){
+          num+=1;
+          document.body.style.backgroundColor = colors[num];
+        }
+      })
+    }
     if(obj.id){
         console.log("Frame data for " + obj.id);
     } else {
         console.log("message " + event.data);
     }
-    if(obj.hands.type="right"){
-      document.body.style.backgroundColor = 'black'
-    } else {
-      document.body.style.backgroundColor = 'white'
-    }
-};
+
+});
+
 
 // On socket close
 ws.onclose = function(event) {
