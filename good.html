@@ -108,24 +108,53 @@ Leap.loop(controllerOptions, function(frame) {
 
       var hand = frame.hands[i];
 
-      if(count.){
-        if (Math.abs(hand.palmPosition[0])>255){
-          var red = 255;
-        } else {
-          var red = Math.round(Math.abs(hand.palmPosition[0]));
-        }
-        if (Math.abs(hand.palmPosition[1])>255){
-          var green = 255;
-        } else {
-          var green = Math.round(Math.abs(hand.palmPosition[1]));
-        }
-        if (Math.abs(hand.palmPosition[2])>255){
-          var blue = 255;
-        } else {
-          var blue = Math.round(Math.abs(hand.palmPosition[2]));
-        }
+      if(count % 2 == 0){
+				frame.gestures.forEach(function(gesture){
+						if (gesture.type == "keyTap") {
+							count++;
+						}
+						if (Math.abs(hand.palmPosition[0])>255){
+		          var red = 255;
+		        } else {
+		          var red = Math.round(Math.abs(hand.palmPosition[0]));
+		        }
+		        if (Math.abs(hand.palmPosition[1])>255){
+		          var green = 255;
+		        } else {
+		          var green = Math.round(Math.abs(hand.palmPosition[1]));
+		        }
+		        if (Math.abs(hand.palmPosition[2])>255){
+		          var blue = 255;
+		        } else {
+		          var blue = Math.round(Math.abs(hand.palmPosition[2]));
+		        }
         document.body.style.backgroundColor = 'rgb(' + red + ',' + green + ',' + blue + ')';
-      }
+});
+		  } else{
+				frame.gestures.forEach(function(gesture){
+				if (gesture.type == "keyTap") {
+					count++;
+				}
+				if (Math.abs(hand.palmPosition[0])>255){
+					var red = 255;
+				} else {
+					var red = Math.round(Math.abs(hand.palmPosition[0]));
+				}
+				if (Math.abs(hand.palmPosition[1])>255){
+					var green = 255;
+				} else {
+					var green = Math.round(Math.abs(hand.palmPosition[1]));
+				}
+				if (Math.abs(hand.palmPosition[2])>255){
+					var blue = 255;
+				} else {
+					var blue = Math.round(Math.abs(hand.palmPosition[2]));
+				}
+				document.body.style.backgroundColor = 'rgb(' + red + ',' + green + ',' + blue + ')';
+				});
+			}
+
+
       handString += "<div style='width:300px; float:left; padding:5px'>";
       handString += "Hand ID: " + hand.id + "<br />";
       handString += "Type: " + hand.type + " hand" + "<br />";
