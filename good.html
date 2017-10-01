@@ -107,9 +107,8 @@ Leap.loop(controllerOptions, function(frame) {
     for (var i = 0; i < frame.hands.length; i++) {
 
       var hand = frame.hands[i];
-
+			frame.gestures.forEach(function(gesture){
       if(count % 2 == 0){
-				frame.gestures.forEach(function(gesture){
 						if (gesture.type == "keyTap") {
 							count++;
 						}
@@ -129,9 +128,7 @@ Leap.loop(controllerOptions, function(frame) {
 		          var blue = Math.round(Math.abs(hand.palmPosition[2]));
 		        }
         document.body.style.backgroundColor = 'rgb(' + red + ',' + green + ',' + blue + ')';
-});
 		  } else{
-				frame.gestures.forEach(function(gesture){
 				if (gesture.type == "keyTap") {
 					count++;
 				}
@@ -151,8 +148,18 @@ Leap.loop(controllerOptions, function(frame) {
 					var blue = Math.round(Math.abs(hand.palmPosition[2]));
 				}
 				document.body.style.backgroundColor = 'rgb(' + red + ',' + green + ',' + blue + ')';
+			  }
+					// var rNum1 = Math.floor(Math.random() * 256);
+					// var rNum2 = Math.floor(Math.random() * 256);
+					// var rNum3 = Math.floor(Math.random() * 256);
+					// var currentTime = new Date().getTime();
+					// if(gesture.type == "circle") {
+					// 		currentTime = new Date().getTime();
+					// 		while (currentTime + 1000 >= new Date().getTime()) {
+					// 			document.body.style.backgroundColor = 'rgb(' + rNum1 + ',' + rNum2 + ',' + rNum3 + ')';
+					// 		}
+					// 	}
 				});
-			}
 
 
       handString += "<div style='width:300px; float:left; padding:5px'>";
