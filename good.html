@@ -1,57 +1,44 @@
+<!DOCTYPE html>
+<!--
+/------------------------------------------------------------------------------\
+| Copyright (C) 2012-2016 Leap Motion, Inc. All rights reserved.               |
+| Leap Motion proprietary and confidential. Not for distribution.              |
+| Use subject to the terms of the Leap Motion SDK Agreement available at       |
+| https://developer.leapmotion.com/sdk_agreement, or another agreement         |
+| between Leap Motion and you, your company or other organization.             |
+\------------------------------------------------------------------------------/
+-->
+
+<!--
+
+See additional libraries, guides, and examples at:
+
+ - https://developer.leapmotion.com/downloads/javascript
+ - https://developer.leapmotion.com/getting-started/javascript
+ - https://developer.leapmotion.com/gallery/tags/javascript
+
+-->
+
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Leap Motion JavaScript Sample</title>
 <script src="http://js.leapmotion.com/leap-0.6.3.min.js"></script>
-<link href="song.js">
 <script>
 // Store frame for motion functions
-var song = {
-  songData: [
-    { // Instrument 0
-      i: [
-      2, // OSC1_WAVEFORM
-      100, // OSC1_VOL
-      128, // OSC1_SEMI
-      0, // OSC1_XENV
-      3, // OSC2_WAVEFORM
-      201, // OSC2_VOL
-      128, // OSC2_SEMI
-      0, // OSC2_DETUNE
-      0, // OSC2_XENV
-      0, // NOISE_VOL
-      5, // ENV_ATTACK
-      6, // ENV_SUSTAIN
-      58, // ENV_RELEASE
-      0, // ARP_CHORD
-      0, // ARP_SPEED
-      0, // LFO_WAVEFORM
-      195, // LFO_AMT
-      6, // LFO_FREQ
-      1, // LFO_FX_FREQ
-      2, // FX_FILTER
-      135, // FX_FREQ
-      0, // FX_RESONANCE
-      0, // FX_DIST
-      32, // FX_DRIVE
-      147, // FX_PAN_AMT
-      6, // FX_PAN_FREQ
-      121, // FX_DELAY_AMT
-      6 // FX_DELAY_TIME
-      ],
-      // Patterns
-      p: [1],
-      // Columns
-      c: [
-        {n: [],
-         f: []}
-      ]
-    },
-  ],
-  rowLen: 5513,   // In sample lengths
-  patternLen: 32,  // Rows per pattern
-  endPattern: 0,  // End pattern
-  numChannels: 1  // Number of channels
+function debounce(func, wait, immediate) {
+	var timeout;
+	return function() {
+		var context = this, args = arguments;
+		var later = function() {
+			timeout = null;
+			if (!immediate) func.apply(context, args);
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+		if (callNow) func.apply(context, args);
+	};
 };
 
 var previousFrame = null;
@@ -84,15 +71,97 @@ Leap.loop(controllerOptions, function(frame) {
   // Display Hand object data
   var handOutput = document.getElementById("handData");
   var handString = "";
-  if (frame.hands.length > 0) {
+    // if(frame.gestures.length >0){
+    //   var doThing = debounce(function(gesture){
+    //       if(gesture.type == 'swipe'){
+    //         var isHorizontal = Math.abs(gesture.direction[0]) > Math.abs(gesture.direction[1]);
+    //         //Classify as right-left or up-down
+    //         if(isHorizontal){
+    //             if(gesture.direction[0] > 0){
+    //                 swipeDirection = "right";
+    //             } else {
+    //                 swipeDirection = "left";
+    //             }
+    //         } else { //vertical
+    //             if(gesture.direction[1] > 0){
+    //                 swipeDirection = "up";
+    //             } else {
+    //                 swipeDirection = "down";
+    //             }
+    //         }
+    //         if(swipeDirection == "right"){
+    //           num+=1;
+    //           count+=1;
+    //           alert(num);
+    //           //document.body.style.backgroundColor= colors[num];
+    //         } else if(swipeDirection == "left") {
+    //           num-=1;
+    //           count+=1;
+    //           alert(gesture.type);
+    //           //document.body.style.backgroundColor= colors[num];
+    //         }
+    //         } else{
+    //           setTimeout(doThing, 100000000);
+    //         }
+    //   }, 25000, true)
     for (var i = 0; i < frame.hands.length; i++) {
+
       var hand = frame.hands[i];
-      var context = new (window.AudioContext || window.webkitAudioContext)();
-      var osc = context.createOscillator(); // instantiate an oscillator
-      osc.type = 'square'; // this is the default - also square, sawtooth, triangle
-      osc.frequency.value = hand.palmPosition[1]; // Hz
-      osc.connect(context.destination); // connect it to the destination
-      osc.start(); // start the oscillator
+			frame.gestures.forEach(function(gesture){
+      if(count % 2 == 0){
+						if (gesture.type == "keyTap") {
+							count++;
+						}
+						if (Math.abs(hand.palmPosition[0])>255){
+		          var red = 255;
+		        } else {
+		          var red = Math.round(Math.abs(hand.palmPosition[0]));
+		        }
+		        if (Math.abs(hand.palmPosition[1])>255){
+		          var green = 255;
+		        } else {
+		          var green = Math.round(Math.abs(hand.palmPosition[1]));
+		        }
+		        if (Math.abs(hand.palmPosition[2])>255){
+		          var blue = 255;
+		        } else {
+		          var blue = Math.round(Math.abs(hand.palmPosition[2]));
+		        }
+        document.body.style.backgroundColor = 'rgb(' + red + ',' + green + ',' + blue + ')';
+		  } else{
+				if (gesture.type == "keyTap") {
+					count++;
+				}
+				if (Math.abs(hand.palmPosition[0])>255){
+					var red = 255;
+				} else {
+					var red = Math.round(Math.abs(hand.palmPosition[0]));
+				}
+				if (Math.abs(hand.palmPosition[1])>255){
+					var green = 255;
+				} else {
+					var green = Math.round(Math.abs(hand.palmPosition[1]));
+				}
+				if (Math.abs(hand.palmPosition[2])>255){
+					var blue = 255;
+				} else {
+					var blue = Math.round(Math.abs(hand.palmPosition[2]));
+				}
+				document.body.style.backgroundColor = 'rgb(' + red + ',' + green + ',' + blue + ')';
+			  }
+					// var rNum1 = Math.floor(Math.random() * 256);
+					// var rNum2 = Math.floor(Math.random() * 256);
+					// var rNum3 = Math.floor(Math.random() * 256);
+					// var currentTime = new Date().getTime();
+					// if(gesture.type == "circle") {
+					// 		currentTime = new Date().getTime();
+					// 		while (currentTime + 1000 >= new Date().getTime()) {
+					// 			document.body.style.backgroundColor = 'rgb(' + rNum1 + ',' + rNum2 + ',' + rNum3 + ')';
+					// 		}
+					// 	}
+				});
+
+
       handString += "<div style='width:300px; float:left; padding:5px'>";
       handString += "Hand ID: " + hand.id + "<br />";
       handString += "Type: " + hand.type + " hand" + "<br />";
@@ -119,9 +188,6 @@ Leap.loop(controllerOptions, function(frame) {
 
       handString += "</div>";
     }
-  } else {
-    osc.stop(context.currentTime + 2);
-  }
   handOutput.innerHTML = handString;
 
   // Display Pointable (finger) object data
@@ -163,7 +229,6 @@ Leap.loop(controllerOptions, function(frame) {
   // Store frame for motion functions
   previousFrame = frame;
 })
-
 function vectorToString(vector, digits) {
   if (typeof digits === "undefined") {
     digits = 1;
@@ -182,6 +247,7 @@ function togglePause() {
     document.getElementById("pause").innerText = "Pause";
   }
 }
+
 
 </script>
 </head>
